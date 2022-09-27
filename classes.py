@@ -2,10 +2,6 @@ from abc import ABC, abstractmethod
 import requests
 import json
 
-par = {'text': 'python', 'only_with_salary': True, 'per_page': 10, 'page': 1}
-response = requests.get('https://api.hh.ru/vacancies/', params=par)
-with open('jobs.json', 'w', encoding='utf-8') as file_jobs:
-    json.dump(response.json(), file_jobs, indent=4, ensure_ascii=False)
 
 class Engine(ABC):
     @abstractmethod
@@ -18,25 +14,42 @@ class HH(Engine):
         self.name = name
 
     def get_request(self):
-        pass
-
+        with open('cor_jobs.json', 'a', encoding='utf-8') as file:
+            for i in range(5):
+                par = {'text': self.name, 'only_with_salary': True,
+                       'per_page': '10', 'page': i, 'area': '113'}
+                response = requests.get('https://api.hh.ru/vacancies/', params=par).json()
+                for j in range(10):
+                    dict_vacancy = response['items'][j]
+                    cl_vacancy = Vacancy(dict_vacancy)
+                    cor_dict_vac = json.dumps(cl_vacancy.__repr__())
+                    json.dump(cor_dict_vac, file, indent=4, ensure_ascii=False)
 
 class Superjob(Engine):
     def get_request(self):
         pass
 
-
 class Vacancy():
-    def __init__(self):
-        self.title_job = title_job
-        self.link_job = link_job
-        self.description_job = description_job
-        self.salary_job = salary_job
-
+    def __init__(self, dict_vacancy):
+        self.dict_vacancy = dict_vacancy
+        self._title_job = self.get_title()
+        self._link_job = self.get_link()
+        self._description_job = self.get_description()
+        self._salary_job = self.get_salary()
+    def get_title(self):
+        return self.dict_vacancy['name']
+    def get_link(self):
+        return self.dict_vacancy['alternate_url']
+    def get_description(self):
+        return f"{self.dict_vacancy['snippet']['responsibility']}\n" \
+               f"{self.dict_vacancy['snippet']['requirement']}"
+    def get_salary(self):
+        return f"{self.dict_vacancy['salary']['from']} - " \
+               f"{self.dict_vacancy['salary']['to']} " \
+               f"{self.dict_vacancy['salary']['currency']}"
 
     def __repr__(self):
-        dict_vacancy = {'Название': {self.title_job}, 'Ссылка': {self.link_job},
-                        'Описание': {self.description_job}, 'Зарплата': {self.salary_job}}
+        dict_vacancy = {'title': self._title_job, 'link': self._link_job,
+                        'description': self._description_job, 'salary': self._salary_job}
         return dict_vacancy
-    pass
 
