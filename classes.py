@@ -30,7 +30,7 @@ class HH(Engine):
                             print('KeyError')
                             continue
                         cl_vacancy = Vacancy(dict_vacancy)
-                        file.write(str(counter) + '***' + cl_vacancy.__repr__() + '\n')
+                        file.write('***' + str(counter) + '***' + cl_vacancy.__repr__() + '\n')
                         counter += 1
         except IndexError:
             print('Найдены все доступные вакансии')
@@ -62,5 +62,5 @@ class Vacancy():
         return f'Название вакансии - {self._title_job}--' \
                f'Зарплата - {self._salary_job}--' \
                f'Ссылка - {self._link_job}--' \
-               f'Описание: {self._description_job}--'
+               f'Описание: {self._description_job}'
 

@@ -21,15 +21,18 @@ def get_top_five():
 def get_random_vac(counter):
     random_num = randint(1,counter)
     with open('vacancy.txt', 'r', encoding='utf-8') as f:
-        res = list(filter(lambda line: f'{str(random_num)}***' in line, f))
+        res = list(filter(lambda line: f'***{str(random_num)}***' in line, f))
         res = ''.join(res).replace('--','\n').replace('***','\n')
         print(res)
 def get_ten_first():
     with open('vacancy.txt', 'r', encoding='utf-8') as f:
-        res = list(filter(lambda line: f'{str(random_num)}***' in line, f))
-        res = ''.join(res).replace('--', '\n').replace('***', '\n')
-        print(res)
-    pass
+        res = []
+        for line in f:
+            s = line.replace('--', '\n').replace('***', '\n').rstrip('\n')
+            if len(res) == 10:
+                break
+            res.append(s)
+        print(*res)
 def get_ten_if():
     pass
 
@@ -52,7 +55,7 @@ def main():
         print(f'Найдено вакансий: {number_of_vac}')
         print('Напишите номер пункта для вызвова или "stop":\n'
               '1 - получить топ пять вакансий по зарплате\n'
-              '2 - получить случайную вакансию\n'
+              '2 - получить 3 случайные вакансии\n'
               '3 - получить 10 первых вакансий\n'
               '4 - получить 10 вакансий с зарплатой выше 300000 руб.\n')
         user_input = input()
