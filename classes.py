@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import requests
 import json
+from bs4 import BeautifulSoup as BS
 class Engine(ABC):
     @abstractmethod
     def get_request(self):
@@ -34,8 +35,14 @@ class HH(Engine):
         return counter
 
 class Superjob(Engine):
+    def __init__(self):
+        self.name = name
     def get_request(self):
-        pass
+        response = requests.get('https://russia.superjob.ru/vacancy/search/?keywords=python')
+        html = BS(response.content, 'html.parser')
+        for el in html.select("._8zbxf _1JA0x _19n5p > .f-test-search-result-item"):
+            title = el.select()
+            print(title[0].text)
 
 class Vacancy():
     def __init__(self, dict_vacancy):
@@ -57,7 +64,7 @@ class Vacancy():
 
     def __repr__(self):
         return f'Название вакансии - {self._title_job}--' \
-               f'Зарплата - {self._salary_job}--' \
+               f'////Зарплата - {self._salary_job}////--' \
                f'Ссылка - {self._link_job}--' \
                f'Описание: {self._description_job}'
 
