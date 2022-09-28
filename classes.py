@@ -1,19 +1,15 @@
 from abc import ABC, abstractmethod
 import requests
 import json
-
-
 class Engine(ABC):
     @abstractmethod
     def get_request(self):
         pass
 
-
 class HH(Engine):
     def __init__(self, name, number_vac):
         self.name = name
         self.number_vac = number_vac
-
     def get_request(self):
         counter = 1
         try:
@@ -36,6 +32,7 @@ class HH(Engine):
             print('Найдены все доступные вакансии')
             return counter
         return counter
+
 class Superjob(Engine):
     def get_request(self):
         pass

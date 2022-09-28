@@ -1,7 +1,7 @@
 from utlis import *
 from classes import *
 import json
-from random import randint
+from random import choices
 def check_us_inp(user, number_of_vac):
     check = user.isdigit()
     if check == False:
@@ -19,11 +19,13 @@ def check_us_inp(user, number_of_vac):
 def get_top_five():
     pass
 def get_random_vac(counter):
-    random_num = randint(1,counter)
     with open('vacancy.txt', 'r', encoding='utf-8') as f:
-        res = list(filter(lambda line: f'***{str(random_num)}***' in line, f))
-        res = ''.join(res).replace('--','\n').replace('***','\n')
-        print(res)
+        content = f.read()
+    res = content.split('\n')
+    res = choices(res,k=3)
+    for i in range(3):
+        res[i] = ''.join(res[i]).replace('--','\n').replace('***','\n').rstrip('\n')
+        print(res[i])
 def get_ten_first():
     with open('vacancy.txt', 'r', encoding='utf-8') as f:
         res = []
@@ -52,12 +54,11 @@ def main():
         print('Вакансий не найдено')
         quit()
     while True:
-        print(f'Найдено вакансий: {number_of_vac}')
+        print(f'\nНайдено вакансий: {number_of_vac}')
         print('Напишите номер пункта для вызвова или "stop":\n'
               '1 - получить топ пять вакансий по зарплате\n'
               '2 - получить 3 случайные вакансии\n'
-              '3 - получить 10 первых вакансий\n'
-              '4 - получить 10 вакансий с зарплатой выше 300000 руб.\n')
+              '3 - получить 10 первых вакансий\n')
         user_input = input()
         if user_input == 'stop':
             break
