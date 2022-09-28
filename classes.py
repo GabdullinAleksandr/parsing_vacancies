@@ -14,7 +14,7 @@ class HH(Engine):
         self.name = name
 
     def get_request(self):
-        with open('cor_jobs.json', 'a', encoding='utf-8') as file:
+        with open('vacancy.txt', 'a', encoding='utf-8') as file:
             for i in range(5):
                 par = {'text': self.name, 'only_with_salary': True,
                        'per_page': '10', 'page': i, 'area': '113'}
@@ -22,8 +22,7 @@ class HH(Engine):
                 for j in range(10):
                     dict_vacancy = response['items'][j]
                     cl_vacancy = Vacancy(dict_vacancy)
-                    cor_dict_vac = json.dumps(cl_vacancy.__repr__())
-                    json.dump(cor_dict_vac, file, indent=4, ensure_ascii=False)
+                    file.write('\n' + cl_vacancy.__repr__() + '---')
 
 class Superjob(Engine):
     def get_request(self):
@@ -41,15 +40,15 @@ class Vacancy():
     def get_link(self):
         return self.dict_vacancy['alternate_url']
     def get_description(self):
-        return f"{self.dict_vacancy['snippet']['responsibility']}\n" \
-               f"{self.dict_vacancy['snippet']['requirement']}"
+        return self.dict_vacancy['snippet']['responsibility']
     def get_salary(self):
         return f"{self.dict_vacancy['salary']['from']} - " \
                f"{self.dict_vacancy['salary']['to']} " \
                f"{self.dict_vacancy['salary']['currency']}"
 
     def __repr__(self):
-        dict_vacancy = {'title': self._title_job, 'link': self._link_job,
-                        'description': self._description_job, 'salary': self._salary_job}
-        return dict_vacancy
+        return f'Название вакансии - {self._title_job}\n' \
+               f'Зарплата - {self._salary_job}\n' \
+               f'Ссылка - {self._link_job}\n' \
+               f'Описание: {self._description_job}\n'
 
