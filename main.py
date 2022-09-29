@@ -6,7 +6,7 @@ def main():
         pass
     request_user = input('Введите ключевое слово для поиска профессии - ')
     try:
-        number_of_vac_user = int(input('Введите требуемое кол-во вакансий(не менее 10) - '))
+        number_of_vac_user = int(input('Введите требуемое кол-во вакансий с HH(не менее 10) - '))
     except:
         print('incorrect input')
         quit()
@@ -16,6 +16,9 @@ def main():
     if number_of_vac == 0:
         print('Вакансий не найдено')
         quit()
+    sj = Superjob(request_user, number_of_vac + 1)
+    print('Выполняется поиск по SJ')
+    number_of_vac = sj.get_request() - 1
     while True:
         print(f'\nНайдено вакансий: {number_of_vac}')
         print('Напишите номер пункта для вызвова или "stop":\n'
@@ -31,4 +34,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 

@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import requests
 import json
 from bs4 import BeautifulSoup as BS
+import lxml
 class Engine(ABC):
     @abstractmethod
     def get_request(self):
@@ -35,14 +36,49 @@ class HH(Engine):
         return counter
 
 class Superjob(Engine):
-    def __init__(self):
-        self.name = name
-    def get_request(self):
-        response = requests.get('https://russia.superjob.ru/vacancy/search/?keywords=python')
-        html = BS(response.content, 'html.parser')
-        for el in html.select("._8zbxf _1JA0x _19n5p > .f-test-search-result-item"):
-            title = el.select()
-            print(title[0].text)
+    def __init__(self, request_user, counter):
+        self.request_user = request_user
+        self.counter = counter
+    def get_request(self, rur='RUR', to_sal=None):
+        list_name = []
+        list_description = []
+        list_salary = []
+
+        for page in range(1,4):
+            print(f'Обработка страницы №{page}')
+            link = f'https://russia.superjob.ru/vacancy/search/?keywords={self.request_user}&page={page}'
+            response = requests.get(link)
+            data_link = BS(response.text, 'lxml')
+            name = data_link.find_all('span', class_='_9fIP1 _249GZ _1jb_5 QLdOc')
+            list_name += name
+            description = data_link.find_all('span', class_='_1Nj4W _249GZ _1jb_5 _1dIgi _3qTky')
+            list_description += description
+            salary = data_link.find_all('span', class_='_2eYAG _1nqY_ _249GZ _1jb_5 _1dIgi')
+            list_salary += salary
+
+        dict_vacancy = {}
+        counter = self.counter
+        with open('vacancy.txt', 'a', encoding='utf-8') as file:
+            for i in range(len(list_name)-1):
+                if list_salary[i].text == 'По договорённости':
+                    continue
+                salary = list_salary[i].text.replace('\xa0','').replace('от','')
+                salary = salary.replace('до','').replace('руб.','')
+                if len(salary) >= 8:
+                    from_sal = salary.split('—')[0]
+                    to_sal = salary.split('—')[1]
+                else:
+                    from_sal = salary
+                dict_vacancy = {'name': list_name[i].text,
+                                'alternate_url': 'https://russia.superjob.ru/' + list_name[i].a["href"],
+                                'snippet': {'responsibility': list_description[i].text},
+                                'salary': {'from': from_sal, 'to': to_sal, 'currency': rur}
+                                }
+                cl_vacancy = Vacancy(dict_vacancy)
+                file.write('***' + str(counter) + '***' + cl_vacancy.__repr__() + '\n')
+                counter += 1
+                to_sal = None
+        return counter
 
 class Vacancy():
     def __init__(self, dict_vacancy):
