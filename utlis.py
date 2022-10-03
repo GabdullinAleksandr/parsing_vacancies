@@ -1,56 +1,46 @@
 from random import choices
-import copy
 import re
 import heapq
-def check_us_inp(user, number_of_vac):
-    check = user.isdigit()
-    if check == False:
-        return False
-    elif user == '1':
-        get_top_five()
-    elif user == '2':
-        get_random_vac(number_of_vac)
-    elif user == '3':
-        get_ten_first()
-    elif user == '4':
-        get_ten_if()
-    else:
-        return False
 
-def get_top_five():
+def check_us_inp(user: str) -> list|bool:
+    '''
+    Чекает ввод пользовотеля и выдает нужную инфу
+    :param user: ввод пользователя из main
+    :return: False, если некорректный ввод, либо лист с обработанной инфой
+    '''
     with open('vacancy.txt', 'r', encoding='utf-8') as f:
         content = f.read()
-    res = content.split('\n')
-    del res[-1]
-    dict_sal = {}
-    count = 0
-    for line in res:
-        sal_line = re.findall(r' [0-9]{2,8} ', line)
+    list_vacancy: list = content.split('\n')
+    list_vacancy.pop(-1)
+    match user:
+        case '1':
+            res = []
+            list_key: list = get_top_ten(list_vacancy)
+            for i in list_key:
+                res.append(list_vacancy[i])
+        case '2':
+            res: list = choices(list_vacancy, k=3)
+        case '3':
+            res: list = list_vacancy[:10]
+        case _:
+            return False
+    for item in range(len(res)):
+        res[item] = ''.join(res[item]).replace('--', '\n').replace('***', '\n').replace('////', '').rstrip('\n')
+    return res
+
+def get_top_ten(content: str) -> list:
+    '''
+    Считает топ 10 по ЗП
+    :param content: данные из файла
+    :return: лист с индексами, в отсортированном порядке.
+    '''
+    dict_sal, count = {}, 0
+    for line in content:
+        sal_line: str = re.findall(r' [0-9]{2,8} ', line)
         if len(sal_line) == 1:
             dict_sal[count] = int(sal_line[0].strip())
-        else:
+        elif len(sal_line) == 2:
             dict_sal[count] = int((int(sal_line[0].strip()) + int(sal_line[1].strip())) / 2)
+        else: continue
         count += 1
-    list_key_sal = heapq.nlargest(5, dict_sal, key=dict_sal.get)
-    for item in list_key_sal:
-        res[item] = ''.join(res[item]).replace('--', '\n').replace('***', '\n').replace('////', '').rstrip('\n')
-        print(res[item])
-
-def get_random_vac(counter):
-    with open('vacancy.txt', 'r', encoding='utf-8') as f:
-        content = f.read()
-    res = content.split('\n')
-    res = choices(res, k=3)
-    for i in range(3):
-        res[i] = ''.join(res[i]).replace('--', '\n').replace('***', '\n').replace('////', '').rstrip('\n')
-        print(res[i])
-
-def get_ten_first():
-    with open('vacancy.txt', 'r', encoding='utf-8') as f:
-        res = []
-        for line in f:
-            s = line.replace('--', '\n').replace('***', '\n').replace('////', '').rstrip('\n')
-            if len(res) == 10:
-                break
-            res.append(s)
-        print(*res)
+    return heapq.nlargest(10, dict_sal, key=dict_sal.get)
