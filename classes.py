@@ -11,7 +11,8 @@ class Engine(ABC):
 
 class HH(Engine):
     '''
-    Обрабатывает HH через api
+    Обрабатывает HH через api, отправляет необработанные данные в класс Vacancy,
+    получает готовые и сразу записывает в файл
     '''
     def __init__(self, name: str, number_vac: int):
         self.name = name
@@ -36,6 +37,10 @@ class HH(Engine):
         return counter
 
 class Superjob(Engine):
+    '''
+    Обрабатывает SJ через BS, отправляет необработанные данные в класс Vacancy,
+    получает готовые и сразу записывает в файл
+    '''
     def __init__(self, request_user, counter):
         self.request_user = request_user
         self.counter = counter
@@ -44,10 +49,17 @@ class Superjob(Engine):
         list_description: list = []
         list_salary: list = []
 
-        for page in range(1,4):
+        link: str = f'https://russia.superjob.ru/vacancy/search/?keywords={self.request_user}'
+        response = requests.get(link)
+        data_link = BS(response.text, 'lxml')
+        try:
+            pages = len(data_link.find_all('div', class_='_8zbxf _9mI07 _1R63t _1D2vG _3YVWE b6N4- _19n5p')[0].contents) - 1
+        except IndexError:
+            pages = 2
+        for page in range(1, pages):
             print(f'Обработка страницы №{page}')
-            link: str = f'https://russia.superjob.ru/vacancy/search/?keywords={self.request_user}&page={page}'
-            response = requests.get(link)
+            link_page: str = f'{link}&page={page}'
+            response = requests.get(link_page)
             data_link = BS(response.text, 'lxml')
             name = data_link.find_all('span', class_='_9fIP1 _249GZ _1jb_5 QLdOc')
             list_name += name
@@ -57,28 +69,27 @@ class Superjob(Engine):
             list_salary += salary
 
         dict_vacancy = {}
-        counter = self.counter
         with open('vacancy.txt', 'a', encoding='utf-8') as file:
             for i in range(len(list_name)-1):
                 if list_salary[i].text == 'По договорённости':
                     continue
-                salary = list_salary[i].text.replace('\xa0','').replace('от','')
-                salary = salary.replace('до','').replace('руб.','')
+                salary: str = list_salary[i].text.replace('\xa0','').replace('от','')
+                salary: str = salary.replace('до','').replace('руб.','')
                 if len(salary) >= 8:
-                    from_sal = salary.split('—')[0]
-                    to_sal = salary.split('—')[1]
+                    from_sal: int = salary.split('—')[0]
+                    to_sal: int = salary.split('—')[1]
                 else:
-                    from_sal = salary
-                dict_vacancy = {'name': list_name[i].text,
+                    from_sal: int = salary
+                dict_vacancy: dict = {'name': list_name[i].text,
                                 'alternate_url': 'https://russia.superjob.ru/' + list_name[i].a["href"],
                                 'snippet': {'responsibility': list_description[i].text},
                                 'salary': {'from': from_sal, 'to': to_sal, 'currency': rur}
                                 }
                 cl_vacancy = Vacancy(dict_vacancy)
-                file.write('***' + str(counter) + '***' + cl_vacancy.__repr__() + '\n')
-                counter += 1
+                file.write('***' + str(self.counter) + '***' + cl_vacancy.__repr__() + '\n')
+                self.counter += 1
                 to_sal = None
-        return counter
+        return self.counter
 
 class Vacancy():
     '''
@@ -106,4 +117,3 @@ class Vacancy():
                f'////Зарплата - {self._salary_job}////--' \
                f'Ссылка - {self._link_job}--' \
                f'Описание: {self._description_job}'
-

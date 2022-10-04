@@ -14,20 +14,20 @@ def check_us_inp(user: str) -> list|bool:
     list_vacancy.pop()
     match user:
         case '1':
-            res = []
+            res: list = []
             list_key: list = get_top_ten(list_vacancy)
             [res.append(list_vacancy[i]) for i in list_key]
         case '2':
-            res: list = choices(list_vacancy, k=3)
+            res = choices(list_vacancy, k=3)
         case '3':
-            res: list = list_vacancy[:10]
+            res = list_vacancy[:10]
         case _:
             return False
     for item in range(len(res)):
         res[item] = ''.join(res[item]).replace('--', '\n').replace('***', '\n').replace('////', '').rstrip('\n')
     return res
 
-def get_top_ten(content: str) -> list:
+def get_top_ten(content: list) -> list:
     '''
     Считает топ 10 по ЗП
     :param content: данные из файла
@@ -35,7 +35,7 @@ def get_top_ten(content: str) -> list:
     '''
     dict_sal, count = {}, 0
     for line in content:
-        sal_line: str = re.findall(r' [0-9]{2,8} ', line)
+        sal_line: list = re.findall(r' [0-9]{2,8} ', line)
         if len(sal_line) == 1:
             dict_sal[count] = int(sal_line[0].strip())
         elif len(sal_line) == 2:
