@@ -11,13 +11,12 @@ def check_us_inp(user: str) -> list|bool:
     with open('vacancy.txt', 'r', encoding='utf-8') as f:
         content = f.read()
     list_vacancy: list = content.split('\n')
-    list_vacancy.pop(-1)
+    list_vacancy.pop()
     match user:
         case '1':
             res = []
             list_key: list = get_top_ten(list_vacancy)
-            for i in list_key:
-                res.append(list_vacancy[i])
+            [res.append(list_vacancy[i]) for i in list_key]
         case '2':
             res: list = choices(list_vacancy, k=3)
         case '3':

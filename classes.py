@@ -3,30 +3,30 @@ import requests
 import json
 from bs4 import BeautifulSoup as BS
 import lxml
+
 class Engine(ABC):
     @abstractmethod
     def get_request(self):
         pass
 
 class HH(Engine):
-    def __init__(self, name, number_vac):
+    '''
+    Обрабатывает HH через api
+    '''
+    def __init__(self, name: str, number_vac: int):
         self.name = name
         self.number_vac = number_vac
     def get_request(self):
-        counter = 1
+        counter: int = 1
         try:
             with open('vacancy.txt', 'a', encoding='utf-8') as file:
                 for i in range(self.number_vac // 10):
                     print(f'Обработка страницы №{i+1}')
-                    par = {'text': self.name, 'only_with_salary': True,
+                    par: list = {'text': self.name, 'only_with_salary': True,
                            'per_page': '10', 'page': i, 'area': '113'}
                     response = requests.get('https://api.hh.ru/vacancies/', params=par).json()
                     for j in range(10):
-                        try:
-                            dict_vacancy = response['items'][j]
-                        except KeyError:
-                            print('KeyError')
-                            continue
+                        dict_vacancy: dict = response['items'][j]
                         cl_vacancy = Vacancy(dict_vacancy)
                         file.write('***' + str(counter) + '***' + cl_vacancy.__repr__() + '\n')
                         counter += 1
@@ -40,13 +40,13 @@ class Superjob(Engine):
         self.request_user = request_user
         self.counter = counter
     def get_request(self, rur='RUR', to_sal=None):
-        list_name = []
-        list_description = []
-        list_salary = []
+        list_name: list = []
+        list_description: list = []
+        list_salary: list = []
 
         for page in range(1,4):
             print(f'Обработка страницы №{page}')
-            link = f'https://russia.superjob.ru/vacancy/search/?keywords={self.request_user}&page={page}'
+            link: str = f'https://russia.superjob.ru/vacancy/search/?keywords={self.request_user}&page={page}'
             response = requests.get(link)
             data_link = BS(response.text, 'lxml')
             name = data_link.find_all('span', class_='_9fIP1 _249GZ _1jb_5 QLdOc')
@@ -81,12 +81,15 @@ class Superjob(Engine):
         return counter
 
 class Vacancy():
-    def __init__(self, dict_vacancy):
+    '''
+    Приводит инфу с сайтов к нужному формату
+    '''
+    def __init__(self, dict_vacancy: dict):
         self.dict_vacancy = dict_vacancy
-        self._title_job = self.get_title()
-        self._link_job = self.get_link()
-        self._description_job = self.get_description()
-        self._salary_job = self.get_salary()
+        self._title_job: str = self.get_title()
+        self._link_job: str = self.get_link()
+        self._description_job: str = self.get_description()
+        self._salary_job: str = self.get_salary()
     def get_title(self):
         return self.dict_vacancy['name']
     def get_link(self):
